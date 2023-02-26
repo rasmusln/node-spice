@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "CommonJS",
+    "declaration": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "outDir": "./dist/cjs",
+    "noFallthroughCasesInSwitch": true,
+    "strictNullChecks": true
+  },
+  "exclude": ["node_modules", "dist", "examples", "*.spec.jts"]
+}

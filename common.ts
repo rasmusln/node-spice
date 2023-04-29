@@ -147,6 +147,20 @@ export enum SPICE_KEYBOARD_LED_BITS {
   CAPS_LOCK_MODIFIER = 4,
 }
 
+export enum SPICE_MOUSE_BUTTON {
+  LEFT = 1,
+  MIDDLE = 2,
+  RIGHT = 3,
+  UP = 4,
+  DOWN = 5
+}
+
+export enum SPICE_MOUSE_BUTTON_MASK {
+  LEFT = 1,
+  MIDDLE = 2,
+  RIGHT = 4
+}
+
 export function checkCapability(
   arr: number[],
   capability: SPICE_COMMON_CAP | SPICE_CHANNEL_CAP

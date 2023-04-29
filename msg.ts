@@ -677,18 +677,35 @@ export class InputsMousePosition implements Serializable {
   }
 }
 
-export class InputsMousePress implements Serializable {
-  bufferSize: number;
+class InputsMouse implements Serializable {
+  bufferSize: number = ByteSize.Uint32 + ByteSize.Uint32;
+
+  constructor(
+    public button: number,
+    public buttons_state: number
+  ) {}
 
   toBuffer(): Uint8Array {
-    throw new Error('Method not implemented.');
+    const buf = new ArrayBuffer(this.bufferSize);
+    const dv = new DataView(buf);
+
+    let at = 0;
+
+    dv.setUint32(at, this.button, true);
+    at += ByteSize.Uint32;
+    dv.setUint32(at, this.buttons_state, true);
+    at += ByteSize.Uint32;
+
+    return new Uint8Array(buf);
   }
 }
 
-export class InputsMouseRelease implements Serializable {
-  bufferSize: number;
-
-  toBuffer(): Uint8Array {
-    throw new Error('Method not implemented.');
-  }
+export class InputsMousePress extends InputsMouse implements Serializable, Msgc {
+  msgcType: number = SPICE_MSGC_INPUTS.MOUSE_PRESS;
 }
+
+export class InputsMouseRelease extends InputsMouse implements Serializable, Msgc {
+  msgcType: number = SPICE_MSGC_INPUTS.MOUSE_RELEASE;
+}
+
+

@@ -73,6 +73,14 @@ export abstract class Channel<T extends SPICE_CHANNEL_CAP> {
     this.strict = strict !== undefined ? strict : false;
   }
 
+  close() {
+    this.conn.close();
+  }
+
+  onClose(listener: () => void) {
+    this.eventEmitter.on('close', listener);
+  }
+
   protected packMsgc(msgc: Serializable & Msgc): Uint8Array {
     if (this.miniHeader) {
       const miniDataHeader = new MiniDataHeader(msgc.msgcType, msgc.bufferSize);
@@ -171,10 +179,6 @@ export abstract class Channel<T extends SPICE_CHANNEL_CAP> {
         msgc: msgc,
       });
     }
-  }
-
-  close() {
-    this.conn.close();
   }
 
   /**

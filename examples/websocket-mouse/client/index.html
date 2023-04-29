@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #status {
+        font-size: 64;
+      }
+      
+      #movement {
+        font-size: 64px;
+      }
+
+      #key {
+        font-size: 64px;
+      }
+
+      .fade-out {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s 1s, opacity 1s linear;
+      }
+
+      .warn {
+        color: red;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="status"></div>
+
+    <div>
+      <span id="movement"></span>
+      <span id="key"></span>
+    </div>
+
+    <script src="client.js"></script>
+  </body>
+</html>

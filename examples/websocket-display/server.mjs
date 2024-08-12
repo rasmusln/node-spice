@@ -1,14 +1,10 @@
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import {
+  getConsoleJSONLogger,
   SPICE_CHANNEL,
   MainChannel,
-  InputsChannel,
-  InputsKeyDown,
-  InputsKeyUp,
-  browserKeyCodeToPCATKeyCode,
-  Browser,
-  getConsoleJSONLogger,
+  DisplayChannel,
 } from '../../dist/cjs/index.js';
 
 BigInt.prototype.toJSON = function () {
@@ -23,17 +19,15 @@ const wss = new WebSocketServer({
   noServer: true,
 });
 
-async function connectInputsChannel(mainChannel, callback) {
-  let inputsChannel;
+async function connectDisplayChannel(mainChannel, callback) {
+  let displayChannel;
 
   mainChannel.onChannelsList(async (mainChannelsList) => {
     for (let channel of mainChannelsList.channels) {
-      if (channel.type == SPICE_CHANNEL.INPUTS && inputsChannel === undefined) {
-        inputsChannel = new InputsChannel(mainChannel);
-        inputsChannel.onInit((_) => {
-          callback(inputsChannel);
-        });
-        await inputsChannel.connect();
+      if (channel.type == SPICE_CHANNEL.INPUTS && displayChannel === undefined) {
+        displayChannel = new DisplayChannel(mainChannel);
+        await displayChannel.connect();
+        return displayChannel;
       }
     }
   });
@@ -43,7 +37,7 @@ wss.on('connection', async (ws) => {
   console.log('WS: connection');
 
   let mainChannel;
-  let inputsChannel;
+  let displayChannel;
 
   mainChannel = new MainChannel(
     5930,
@@ -51,22 +45,23 @@ wss.on('connection', async (ws) => {
     getConsoleJSONLogger()
   );
 
-  await connectInputsChannel(mainChannel, (ic) => {
-    inputsChannel = ic;
-  });
+  displayChannel = await connectDisplayChannel(mainChannel);
+  if (displayChannel !== undefined) {
+    displayChannel.onMode((mode) => {
+
+    });
+  }
 
   ws.on('message', (msg) => {
     let payload = JSON.parse(msg);
 
-    let code = browserKeyCodeToPCATKeyCode(Browser['Firefox'], payload.code);
+    if (displayChannel !== undefined) {
 
-    if (inputsChannel !== undefined) {
-      if (payload.type === 'keydown') {
-        inputsChannel.send(new InputsKeyDown(code));
-      } else if (payload.type === 'keyup') {
-        inputsChannel.send(new InputsKeyUp(code));
-      }
+
+
     }
+
+    console.log(JSON.stringify(payload));
   });
 
   ws.on('close', async () => {

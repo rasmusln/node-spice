@@ -55,7 +55,7 @@ wss.on('connection', async (ws) => {
     getConsoleJSONLogger()
   );
 
-  inputsChannel = await connectInputsChannel(mainChannel, (ic) => {
+  await connectInputsChannel(mainChannel, (ic) => {
     inputsChannel = ic;
   });
 

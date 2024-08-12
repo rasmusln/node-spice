@@ -19,10 +19,15 @@ import {
   SPICE_TICKET_PUBKEY_RSA_KEY_BIT_SIZE,
   SPICE_VERSION_MAJOR,
   SPICE_VERSION_MINOR,
+  SPICE_MSG_DISPLAY,
+  SPICE_ADDRESS,
+  SPICE_MSGC_DISPLAY,
+  SPICE_LINK_MSG,
+  SPICE_LINK_MSGC,
 } from './common';
 
 export interface Msg {
-  msgType: SPICE_MSG | SPICE_MSG_TYPE;
+  msgType: SPICE_MSG | SPICE_MSG_TYPE; //TODO make this reaonly
 }
 
 export interface Msgc {
@@ -174,6 +179,8 @@ export class LinkReply implements Deserializable {
 
   bufferSize: number = LinkReply.fixedBufferSize;
 
+  readonly linkMsgType: SPICE_LINK_MSG  = SPICE_LINK_MSG.REPLY;
+
   constructor(
     public magic: number,
     public major_version: number,
@@ -269,10 +276,12 @@ export class LinkReplyData implements Deserializable {
   }
 }
 
-export class AuthReply implements Deserializable {
+export class AuthReply implements Deserializable {//TODO rename to `LinkReply`?
   static fixedbufferSize: number = ByteSize.Uint32;
 
   bufferSize: number = AuthReply.fixedbufferSize;
+
+  readonly linkMsgType = SPICE_LINK_MSG.RESULT;
 
   constructor(public error_code: number) {}
 
@@ -467,6 +476,8 @@ export class LinkMess<T extends SPICE_CHANNEL_CAP> implements Serializable {
   get bufferSize(): number {
     return ByteSize.Uint32 * 10 + ByteSize.Uint8 * 2;
   }
+
+  readonly linkMsgcType: SPICE_LINK_MSGC = SPICE_LINK_MSGC.MESS;
 
   constructor(
     public connection_id: number,
@@ -709,3 +720,104 @@ export class InputsMouseRelease extends InputsMouse implements Serializable, Msg
 }
 
 
+export class DisplayMode implements Deserializable, Msg {
+  msgType: SPICE_MSG | SPICE_MSG_TYPE = SPICE_MSG_DISPLAY.MODE;
+
+  constructor(
+    public width: number,
+    public height: number,
+    public depth: number
+  ) {}
+
+  static fromBuffer(buffer: ArrayBuffer): DisplayMode {
+    const dv = new DataView(buffer);
+    let at = 0;
+
+    const width = dv.getUint32(at, true);
+    at += ByteSize.Uint32;
+    const height = dv.getUint32(at, true);
+    at += ByteSize.Uint32;
+    const depth = dv.getUint32(at, true);
+    at += ByteSize.Uint32;
+
+    return new DisplayMode(width, height, depth);
+  }
+}
+
+export class DisplayInit implements Serializable, Msgc {
+  msgcType: SPICE_MSGC | SPICE_MSGC_TYPE = SPICE_MSGC_DISPLAY.INIT;
+  
+  readonly bufferSize: number = 0;
+
+  toBuffer(): Uint8Array {
+    return new Uint8Array();
+  }
+}
+
+export class DisplayMark implements Deserializable, Msg {
+  readonly msgType: SPICE_MSG | SPICE_MSG_TYPE = SPICE_MSG_DISPLAY.MARK;
+
+  static readonly singleton = new DisplayMark();
+
+  static fromBuffer(buffer: ArrayBuffer): DisplayMark {
+    return DisplayMark.singleton;
+  }
+}
+
+export class DisplayReset implements Deserializable, Msg {
+  readonly msgType: SPICE_MSG | SPICE_MSG_TYPE;
+
+  static readonly singleton = new DisplayReset();
+
+  static fromBuffer(buffer: ArrayBuffer): DisplayReset {
+    return DisplayReset.singleton;
+  }
+}
+
+export class DisplaySpicePalette implements Deserializable {
+  constructor(
+    public id: number,
+    public tableSize: number,
+    public colorTable: number[],
+  ) {}
+
+  static fromBuffer(buffer: ArrayBuffer): DisplaySpicePalette {
+    //TODO
+    return new DisplaySpicePalette(0, 0, []);
+  }
+}
+
+export class DisplayPixmap implements Deserializable {
+  constructor(
+    public format: number,
+    public flags: number,
+    public width: number,
+    public height: number,
+    public stride: number,
+    public paletteOrPaletteId: SPICE_ADDRESS | number,
+    public data: number, //TODO SPICE_ADDRESS type
+  ) {}
+}
+
+export class DisplayLZPalette implements Deserializable {
+  constructor(
+    public flags: number,
+    public dataSize: number,
+    public paletteOrPaletteId: SPICE_ADDRESS | number,
+    public data: Uint8Array,
+  ) {}
+}
+
+export class DisplayImageDescriptor implements Deserializable {
+  constructor(
+    public id: number,
+    public type: number,
+    public flags: number,
+    public width: number,
+    public height: number,
+  ) {}
+}
+
+export class DisplayImageData implements Deserializable {
+  //TODO
+}

@@ -16,12 +16,13 @@
     "prettier-write": "prettier --write .",
     "check": "npm run lint && npm run prettier-write",
     "lint": "eslint .",
-    "build": "tsc",
+    "build": "npx tsc",
     "test": "jest"
   },
   "author": "rasmusln",
   "license": "BSD-3-Clause",
   "devDependencies": {
+    "typescript": "^5.5.4",
     "@jest/globals": "^29.4.3",
     "@types/node": "^18.11.19",
     "@typescript-eslint/eslint-plugin": "^5.53.0",

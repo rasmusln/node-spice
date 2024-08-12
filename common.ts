@@ -15,8 +15,8 @@ export enum SPICE_CHANNEL {
   TUNNEL = 7,
   SMARTCARD = 8,
   USBREDIR = 9,
-  PORT = 1,
-  WEBDAV = 1,
+  PORT = 10,
+  WEBDAV = 11,
 }
 
 export enum SPICE_LINK_ERR {
@@ -66,6 +66,55 @@ export enum SPICE_DISPLAY_CAP {
   //TODO add remaining capabilities
 }
 
+export type SPICE_ADDRESS = number;
+
+export class SPICE_FIXED28_4 {
+  constructor(
+    public numerator: number,
+    public denominator: number,
+  ) {}
+}
+
+export class Point {
+  constructor(
+    public x: number,
+    public y: number,
+  ) {}
+}
+
+export class Point16 {
+  constructor(
+    public x: number,
+    public y: number,
+  ) {}
+}
+
+export class Rect {
+  constructor(
+    public top: number,
+    public left: number,
+    public bottom: number,
+    public right: number,
+  ) {}
+}
+
+export class PointFix {
+  constructor(
+    public x: SPICE_FIXED28_4,
+    public y: SPICE_FIXED28_4,
+  ) {}
+}
+
+export enum SPICE_LINK_MSG {
+  REPLY = -1,
+  RESULT = -2,
+}
+
+export enum SPICE_LINK_MSGC {
+  MESS = -1,
+  PASS = -2,
+}
+
 export enum SPICE_MSG {
   MIGRATE = 1,
   MIGRATE_DATA = 2,
@@ -86,9 +135,9 @@ export enum SPICE_MSGC {
   FIRST_AVAIL = 101,
 }
 
-export type SPICE_MSG_TYPE = SPICE_MSG_MAIN | SPICE_MSG_INPUTS;
+export type SPICE_MSG_TYPE = SPICE_MSG_MAIN | SPICE_MSG_INPUTS | SPICE_MSG_DISPLAY;
 
-export type SPICE_MSGC_TYPE = SPICE_MSGC_MAIN | SPICE_MSGC_INPUTS;
+export type SPICE_MSGC_TYPE = SPICE_MSGC_MAIN | SPICE_MSGC_INPUTS | SPICE_MSGC_DISPLAY;
 
 export enum SPICE_MSG_MAIN {
   MIGRATE_BEGIN = 101,
@@ -136,6 +185,92 @@ export enum SPICE_MSGC_INPUTS {
   MOUSE_POSITION = 112,
   MOUSE_PRESS = 113,
   MOUSE_RELEASE = 114,
+}
+
+export enum SPICE_MSG_DISPLAY {
+  MODE = 101,
+  MARK = 102,
+  RESET = 103,
+  COPY_BITS = 104,
+
+  INVAL_LIST = 105,
+  INVAL_ALL_PIXMAPS = 106,
+  INVAL_PALETTE = 107,
+  INVAL_ALL_PALETTES = 108,
+
+  STREAM_CREATE = 122,
+  STREAM_DATA = 123,
+  STREAM_CLIP = 124,
+  STREAM_DESTROY = 125,
+  STREAM_DESTROY_ALL,
+
+  DRAW_FILL = 302,
+  DRAW_OPAQUE = 303,
+  DRAW_COPY = 304,
+  DRAW_BLEND = 305,
+  DRAW_BLACKNESS = 306,
+  DRAW_WHITENESS = 307,
+  DRAW_INVERS = 308,
+  DRAW_ROP3 = 309,
+  DRAW_STROKE = 310,
+  DRAW_TEXT = 311,
+  DRAW_TRANSPARENT = 312,
+  DRAW_ALPHA_BLEND = 313,
+}
+
+export enum SPICE_MSGC_DISPLAY {
+  INIT = 101,
+}
+
+export enum SPICE_ROPD {
+  INVERS_SRC = 1,
+  INVERS_BRUSH = 2,
+  INVERS_DEST = 4,
+  OP_PUT = 8,
+  OP_OR = 16,
+  OP_AND = 32,
+  OP_XOR = 64,
+  OP_BLACKNESS = 128,
+  OP_WHITENESS = 256,
+  OP_INVERS = 512,
+  INVERS_RES
+}
+
+export enum PIXMAP {
+  FORMAT_1BIT_LE = 1,
+  FORMAT_1BIT_BE = 2,
+  FORMAT_4BIT_LE = 3,
+  FORMAT_4BIT_BE = 4,
+  FORMAT_8BIT = 5,
+  FORMAT_16BIT = 6,
+  FORMAT_24BIT = 7,
+  FORAMT_32BIT = 8,
+  FORMAT_RGBA = 9,
+}
+
+export enum PIXMAP_FLAG {
+  PAL_CACHE_ME = 1,
+  PAL_FROM_CACHE = 2,
+  TOP_DOWN = 4,
+}
+
+export enum LZPALETTE_FLAG {
+  PAL_CACHE_ME = 1,
+  PAL_FROM_CACHE = 2,
+  TOP_DOWN = 4,
+}
+
+export enum SPICE_IMAGE_TYPE {
+  PIXMAP = 0,
+  QUIC = 1,
+  LZ_PLT = 100,
+  LZ_RGB = 101,
+  GLZ_RGB = 102,
+  FROM_CACHE = 103,
+}
+
+export enum SPICE_IMAGE_FLAG {
+  CACHE_ME = 1,
 }
 
 export enum SPICE_KEYBOARD_LED_BITS {

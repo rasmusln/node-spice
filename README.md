@@ -20,7 +20,7 @@ and then start a spice server.
 
 As an example `qemu` can be used to start both a vnc server and spice server for the same virtual machine
 
-```bash
+```sh
 qemu-system-x86_64 -smp 2 -m 2048 -boot d -cdrom ~/path/to/some.iso -vnc :0 -vga qxl \
   -device virtio-serial-pci -spice port=5930,disable-ticketing=on \
   -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 \

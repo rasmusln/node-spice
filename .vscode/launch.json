@@ -38,6 +38,16 @@
       "cwd": "${workspaceFolder}//examples/websocket-mouse",
       "program": "server.mjs",
       "outFiles": ["${workspaceFolder}/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch examples/websocket-display",
+      "skipFiles": ["<node_internals>/**"],
+      "preLaunchTask": "npm: build",
+      "cwd": "${workspaceFolder}//examples/websocket-display",
+      "program": "server.mjs",
+      "outFiles": ["${workspaceFolder}/**/*.js"]
     }
   ]
 }

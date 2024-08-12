@@ -10,13 +10,22 @@ import {
   SPICE_CHANNEL,
   SPICE_CHANNEL_CAP,
   SPICE_COMMON_CAP,
+  SPICE_DISPLAY_CAP,
   SPICE_LINK_ERR,
   SPICE_MAIN_CAP,
   SPICE_MSG,
+  SPICE_MSG_DISPLAY,
   SPICE_MSG_INPUTS,
+  SPICE_LINK_MSG,
   SPICE_MSG_MAIN,
   SPICE_MSG_TYPE,
   SPICE_NO_CAP,
+  SPICE_LINK_MSGC,
+  SPICE_MSGC_TYPE,
+  SPICE_MSGC,
+  SPICE_MSGC_MAIN,
+  SPICE_MSGC_INPUTS,
+  SPICE_MSGC_DISPLAY,
 } from './common';
 import {
   AuthReply,
@@ -41,6 +50,8 @@ import {
   MainAttachChannels,
   InputsKeyDown,
   InputsKeyUp,
+  DisplayMode,
+  DisplayInit,
 } from './msg';
 import { BufferedConnection, encrypt_ticket, Logger } from './util';
 
@@ -51,7 +62,7 @@ export abstract class Channel<T extends SPICE_CHANNEL_CAP> {
 
   private readonly eventEmitter: EventEmitter;
 
-  protected readonly logger?: Logger;
+  public readonly logger?: Logger;
   protected readonly strict: boolean;
 
   constructor(
@@ -133,7 +144,7 @@ export abstract class Channel<T extends SPICE_CHANNEL_CAP> {
         timestamp: new Date(),
         connection_id: this.connection_id,
         channel: this.channel_id,
-        channel_name: SPICE_CHANNEL[this.channel_id],
+        channel_name: SPICE_CHANNEL[this.type],
         payload: o,
       });
     }
@@ -153,15 +164,64 @@ export abstract class Channel<T extends SPICE_CHANNEL_CAP> {
     }
   }
 
+  private logLinkMsg(linkMsg: LinkReply | AuthReply, header?: Header) {
+    if (this.logger !== undefined) {
+      this.logger({
+        timestamp: new Date(),
+        connection_id: this.connection_id,
+        channel: this.channel_id,
+        channel_name: SPICE_CHANNEL[this.type],
+        header: header,
+        msgType: SPICE_LINK_MSG[linkMsg.linkMsgType],
+        msg: linkMsg,
+      })
+    }
+  }
+
+  private logLinkMsgc<T extends SPICE_CHANNEL_CAP>(linkMsgc: LinkMess<T>, header?: Header) {
+    if (this.logger !== undefined) {
+      this.logger({
+        timestamp: new Date(),
+        connection_id: this.connection_id,
+        channel: this.channel_id,
+        channel_name: SPICE_CHANNEL[this.type],
+        header: header,
+        msgcType: SPICE_LINK_MSGC[linkMsgc.linkMsgcType],
+        msgc: linkMsgc,
+      })
+    }
+  }
+
+  /**
+   * Return the name of the message to the client type.
+   * @param msgType message to the client
+   */
+  abstract msgTypeName(msgType: SPICE_MSG_TYPE): string;
+
+  /**
+   * Return the name of the message from the client type.
+   * @param msgcType message from the client
+   */
+  abstract msgcTypeName(msgcType: SPICE_MSGC_TYPE): string;
+
+  private msgTypeNameHelper(msgType: SPICE_MSG | SPICE_MSG_TYPE) {//TODO
+    return (msgType < 100) ? SPICE_MSG[msgType] : this.msgTypeName(msgType as SPICE_MSG_TYPE);
+  }
+
+  private msgcTypeNameHelper(msgcType: SPICE_MSGC | SPICE_MSGC_TYPE) {
+    return (msgcType < 100) ? SPICE_MSGC[msgcType] : this.msgcTypeName(msgcType as SPICE_MSGC_TYPE);
+  }
+
   protected logMsg(msg: Msg, header?: Header) {
     if (this.logger !== undefined) {
       this.logger({
         timestamp: new Date(),
         connection_id: this.connection_id,
         channel: this.channel_id,
-        channel_name: SPICE_CHANNEL[this.channel_id],
+        channel_name: SPICE_CHANNEL[this.type],
         header: header,
-        msgType: msg.msgType,
+        msgTypeId: msg.msgType,
+        msgType: this.msgTypeNameHelper(msg.msgType),
         msg: msg,
       });
     }
@@ -173,9 +233,10 @@ export abstract class Channel<T extends SPICE_CHANNEL_CAP> {
         timestamp: new Date(),
         connection_id: this.connection_id,
         channel: this.channel_id,
-        channel_name: SPICE_CHANNEL[this.channel_id],
+        channel_name: SPICE_CHANNEL[this.type],
         header: header,
-        msgcType: msgc.msgcType,
+        msgcTypeId: msgc.msgcType,
+        msgcType: this.msgcTypeNameHelper(msgc.msgcType),
         msgc: msgc,
       });
     }
@@ -245,7 +306,7 @@ export abstract class Channel<T extends SPICE_CHANNEL_CAP> {
       await this.conn.read(AuthReply.fixedbufferSize)
     );
 
-    this.log(authReply);
+    this.logLinkMsg(authReply);
 
     if (authReply.error_code !== SPICE_LINK_ERR.OK) {
       this.logErr('Authentication failed');
@@ -324,7 +385,18 @@ export abstract class Channel<T extends SPICE_CHANNEL_CAP> {
 
 export class MainChannel extends Channel<SPICE_MAIN_CAP> {
   readonly agent: Agent;
+  
+  msgTypeName(msgType: SPICE_MSG_TYPE): string {
+    return SPICE_MSG_MAIN[msgType];
+  }
+  
+  msgcTypeName(msgcType: SPICE_MSGC_TYPE): string {
+    return SPICE_MSGC_MAIN[msgcType];
+  }
 
+  /**
+   * The session id as returned by the spice server.
+   */
   sessionId?: number;
   name?: string;
   uuid?: string;
@@ -357,6 +429,12 @@ export class MainChannel extends Channel<SPICE_MAIN_CAP> {
 
   get isConnected() {
     return this.conn;
+  }
+
+  getChanelId(type: SPICE_CHANNEL): number | undefined {
+    return this.available_channels?.find((c) => {
+      return c.type == type;
+    })?.id;
   }
 
   onInit(listener: (MainInit) => void) {
@@ -450,9 +528,23 @@ export class MainChannel extends Channel<SPICE_MAIN_CAP> {
 }
 
 export class InputsChannel extends Channel<SPICE_NO_CAP> {
+  
+  msgTypeName(msgType: SPICE_MSG_TYPE): string {
+    return SPICE_MSG_INPUTS[msgType];
+  }
+
+  msgcTypeName(msgcType: SPICE_MSGC_TYPE): string {
+    return SPICE_MSGC_INPUTS[msgcType];
+  }
+  
   constructor(mainChannel: MainChannel) {
     if (mainChannel.sessionId === undefined) {
       throw new Error('Missing session id');
+    }
+
+    let channeId = mainChannel.getChanelId(SPICE_CHANNEL.INPUTS);
+    if (channeId === undefined) {
+      throw new Error('No chanel for SPICE_CHANEL.INPUTS');
     }
 
     super(
@@ -460,9 +552,10 @@ export class InputsChannel extends Channel<SPICE_NO_CAP> {
       mainChannel.ticket,
       mainChannel.sessionId,
       SPICE_CHANNEL.INPUTS,
-      0,
+      channeId,
       mainChannel.commonCapabilities,
-      []
+      [],
+      mainChannel.logger,
     );
   }
 
@@ -520,4 +613,62 @@ export class InputsChannel extends Channel<SPICE_NO_CAP> {
         break;
     }
   }
+}
+
+export class DisplayChannel extends Channel<SPICE_DISPLAY_CAP> {
+  
+  msgTypeName(msgType: SPICE_MSG_TYPE): string {
+    return SPICE_MSG_DISPLAY[msgType];
+  }
+  
+  msgcTypeName(msgcType: SPICE_MSGC_TYPE): string {
+    return SPICE_MSGC_DISPLAY[msgcType];
+  }
+
+  constructor(mainChannel: MainChannel) {
+    if (mainChannel.sessionId === undefined) {
+      throw new Error('Missing session id');
+    }
+
+    let channeId = mainChannel.getChanelId(SPICE_CHANNEL.DISPLAY);
+    if (channeId === undefined) {
+      throw new Error('No chanel for SPICE_CHANEL.DISPLAY');
+    }
+
+    super(
+      mainChannel.port,
+      mainChannel.ticket,
+      mainChannel.sessionId,
+      SPICE_CHANNEL.DISPLAY,
+      channeId,
+      mainChannel.commonCapabilities,//TODO review
+      [],
+      mainChannel.logger,
+    );
+  }
+
+  onMode(listener: (DislayMode) => void) {
+    this.on(SPICE_MSG_DISPLAY.MODE, listener);
+  }
+
+  async process(header: Header) {
+    const buffer = await this.conn.read(header.size);
+
+    switch (header.type) {
+      case SPICE_MSG_DISPLAY.MODE:
+        let mode = DisplayMode.fromBuffer(buffer);
+        this.logMsg(mode);
+
+        this.conn.write(this.packMsgc(new DisplayInit()));
+
+        this.emit(mode);
+        break;      
+      }
+
+      console.log('---');
+      console.log(header.type);
+      console.log('---');
+  }
+
+
 }

@@ -26,7 +26,7 @@ import {
   SPICE_MSGC_MAIN,
   SPICE_MSGC_INPUTS,
   SPICE_MSGC_DISPLAY,
-} from './common';
+} from 'node-spice-common/common';
 import {
   AuthReply,
   LinkReplyData,
@@ -52,8 +52,10 @@ import {
   InputsKeyUp,
   DisplayMode,
   DisplayInit,
-} from './msg';
-import { BufferedConnection, encrypt_ticket, Logger } from './util';
+} from 'node-spice-common/msg';
+import { BufferedConnection } from './reader';
+import { Logger } from 'node-spice-common/logger';
+import { encrypt_ticket } from './encryption';
 
 export abstract class Channel<T extends SPICE_CHANNEL_CAP> {
   protected readonly conn: BufferedConnection;

@@ -1,0 +1,12 @@
+{
+  "name": "web-app",
+  "version": "0.0.1",
+  "main": "server.ts",
+  "devDependencies": {},
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "rasmusln",
+  "license": "BSD-3-Clause",
+  "description": ""
+}

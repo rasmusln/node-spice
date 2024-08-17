@@ -26,7 +26,7 @@ import {
   SPICE_MSGC_MAIN,
   SPICE_MSGC_INPUTS,
   SPICE_MSGC_DISPLAY,
-} from 'node-spice-common/common';
+} from '@rasmusln/node-spice-common/common';
 import {
   AuthReply,
   LinkReplyData,
@@ -52,9 +52,9 @@ import {
   InputsKeyUp,
   DisplayMode,
   DisplayInit,
-} from 'node-spice-common/msg';
+} from '@rasmusln/node-spice-common/msg';
 import { BufferedConnection } from './reader';
-import { Logger } from 'node-spice-common/logger';
+import { Logger } from '@rasmusln/node-spice-common/logger';
 import { encrypt_ticket } from './encryption';
 
 export abstract class Channel<T extends SPICE_CHANNEL_CAP> {

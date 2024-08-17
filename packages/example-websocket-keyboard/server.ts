@@ -1,17 +1,12 @@
+import { InputsChannel, MainChannel } from '@rasmusln/node-spice-client';
+import { SPICE_CHANNEL } from '@rasmusln/node-spice-common/common';
+import { Browser, browserKeyCodeToPCATKeyCode } from '@rasmusln/node-spice-common/keyboard';
+import { getConsoleJSONLogger } from '@rasmusln/node-spice-common/logger';
+import { InputsKeyDown, InputsKeyUp } from '@rasmusln/node-spice-common/msg';
 import express from 'express';
 import { WebSocketServer } from 'ws';
-import {
-  SPICE_CHANNEL,
-  MainChannel,
-  InputsChannel,
-  InputsKeyDown,
-  InputsKeyUp,
-  browserKeyCodeToPCATKeyCode,
-  Browser,
-  getConsoleJSONLogger,
-} from '../../dist/cjs/index.js';
 
-BigInt.prototype.toJSON = function () {
+(BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
 
@@ -60,11 +55,16 @@ wss.on('connection', async (ws) => {
 
     let code = browserKeyCodeToPCATKeyCode(Browser['Firefox'], payload.code);
 
+    if (code === undefined) {
+      //TODO log error
+      return;
+    }
+
     if (inputsChannel !== undefined) {
       if (payload.type === 'keydown') {
-        inputsChannel.send(new InputsKeyDown(code));
+        inputsChannel.send(new InputsKeyDown(code as number));
       } else if (payload.type === 'keyup') {
-        inputsChannel.send(new InputsKeyUp(code));
+        inputsChannel.send(new InputsKeyUp(code as number));
       }
     }
   });

@@ -1,0 +1,8 @@
+{
+    "name": "@rasmusln/node-spice-example-websocket-mouse",
+    "version": "0.0.1",
+    "dependencies": {
+        "node-spice-client": "0.0.1",
+        "node-spice-common": "0.0.1"
+    }
+}

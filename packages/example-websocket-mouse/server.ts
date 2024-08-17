@@ -1,21 +1,30 @@
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import {
-  SPICE_CHANNEL,
   MainChannel,
   InputsChannel,
+} from '@rasmusln/node-spice-client';
+import {
+  SPICE_CHANNEL,
+} from '@rasmusln/node-spice-common/common';
+import {
   ButtonsStateEmpty,
   browserMouseButtonToSpiceMouseButton,
   browserMouseButtonToSpiceMouseButtonMask,
   mouseButtonsStateSet,
   mouseButtonsStateUnset,
+} from '@rasmusln/node-spice-common/mouse';
+import {
   getConsoleJSONLogger,
-  InputsMouseMotion,
-  InputsMousePress,
-  InputsMouseRelease,
-} from '../../dist/cjs/index.js';
+} from '@rasmusln/node-spice-common/logger';
+import { 
+  InputsMouseMotion, 
+  InputsMousePress, 
+  InputsMouseRelease } 
+from '@rasmusln/node-spice-common/msg';
 
-BigInt.prototype.toJSON = function () {
+//TODO define package with poly fill?
+(BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
 
@@ -79,7 +88,6 @@ wss.on('connection', async (ws) => {
 
     if (inputsChannel !== undefined) {
       //TODO optimize if else chain
-      //TODO use mouse press and mouse release messages
       //TODO implement mouse press and mouse release messages
 
       if (payload.type === 'mousedown') {
@@ -109,8 +117,6 @@ wss.on('connection', async (ws) => {
       } else if (payload.type === 'mousemove') {
         inputsChannel.send(new InputsMouseMotion(payload.movementX, payload.movementY, buttons_state));
       }
-
-      console.log(buttons_state);//TODO remove
     }
   });
 

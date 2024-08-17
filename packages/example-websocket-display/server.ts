@@ -1,13 +1,10 @@
+import { DisplayChannel, MainChannel } from '@rasmusln/node-spice-client';
+import { SPICE_CHANNEL } from '@rasmusln/node-spice-common/common.js';
+import { getConsoleJSONLogger } from '@rasmusln/node-spice-common/logger';
 import express from 'express';
 import { WebSocketServer } from 'ws';
-import {
-  getConsoleJSONLogger,
-  SPICE_CHANNEL,
-  MainChannel,
-  DisplayChannel,
-} from '../../dist/cjs/index.js';
 
-BigInt.prototype.toJSON = function () {
+(BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
 
@@ -19,7 +16,7 @@ const wss = new WebSocketServer({
   noServer: true,
 });
 
-async function connectDisplayChannel(mainChannel, callback) {
+async function connectDisplayChannel(mainChannel) {
   let displayChannel;
 
   mainChannel.onChannelsList(async (mainChannelsList) => {
@@ -65,9 +62,9 @@ wss.on('connection', async (ws) => {
   });
 
   ws.on('close', async () => {
-    inputsChannel.close();
+    displayChannel.close();
     mainChannel.close();
-    inputsChannel = undefined;
+    displayChannel = undefined;
     mainChannel = undefined;
   });
 

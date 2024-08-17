@@ -53,9 +53,7 @@ wss.on('connection', async (ws) => {
     let payload = JSON.parse(msg);
 
     if (displayChannel !== undefined) {
-
-
-
+      
     }
 
     console.log(JSON.stringify(payload));

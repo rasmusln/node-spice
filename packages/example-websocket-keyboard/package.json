@@ -2,7 +2,9 @@
     "name": "@rasmusln/node-spice-example-websocket-keyboard",
     "version": "0.0.1",
     "dependencies": {
-        "node-spice-client": "0.0.1",
-        "node-spice-common": "0.0.1"
+        "@rasmusln/node-spice-client": "0.0.1",
+        "@rasmusln/node-spice-common": "0.0.1",
+        "express": "^4.18.2",
+        "ws": "^8.12.1"
     }
 }

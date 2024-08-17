@@ -22,8 +22,21 @@
   "workspaces": [
     "packages/client",
     "packages/common",
-    "packages/web-app"
+    "packages/web-app",
+    "packages/example-websocket-keyboard",
+    "packages/example-websocket-mouse",
+    "packages/example-websocket-display"
   ],
   "author": "rasmusln",
-  "license": "BSD-3-Clause"
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@jest/globals": "^29.4.3",
+    "@types/node": "^18.11.19",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "eslint": "^8.34.0",
+    "eslint-config-prettier": "^8.6.0",
+    "prettier": "2.8.4"
+  }
 }
